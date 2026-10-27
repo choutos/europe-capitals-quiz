@@ -1,0 +1,7 @@
+Explore the countries and capitals of Europe in a simple offline quiz.
+
+Choose the capital for a country or the country for a capital. Play ten-question rounds with four answers, or switch on Hard difficulty and type your answer to practise spelling. Immediate feedback helps you learn.
+
+Includes 51 places across Europe and selected border cases: non-EU countries, microstates, Cyprus, the South Caucasus, Kazakhstan, and Kosovo. The game supports English and German, with a language switch in the app. Flags appear beside country names only.
+
+No account, ads, tracking, or internet access required.

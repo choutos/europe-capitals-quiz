@@ -1,0 +1,1 @@
+Erste Version: Offline-Quiz zu europäischen Hauptstädten auf Deutsch und Englisch, mit Flaggen und optionalem Tippmodus.

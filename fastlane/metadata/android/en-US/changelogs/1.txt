@@ -1,0 +1,1 @@
+Initial release: offline Europe capitals quiz with English and German, country flags, and optional typed-answer Hard difficulty.
