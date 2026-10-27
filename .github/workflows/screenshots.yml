@@ -27,14 +27,16 @@ jobs:
           script: |
             ./gradlew assembleDebug
             adb install app/build/outputs/apk/debug/app-debug.apk
+            adb shell wm size 1080x2640
             sleep 20
             adb shell am start -n eu.wanderclan.capitalquest/.MainActivity
             sleep 8
-            adb shell input tap 300 1330
-            sleep 3
             mkdir -p screenshots
             adb exec-out screencap -p > screenshots/1.png
+            adb shell input tap 930 760
+            sleep 3
+            adb exec-out screencap -p > screenshots/2.png
       - uses: actions/upload-artifact@v4
         with:
           name: capital-quest-screenshot
-          path: screenshots/1.png
+          path: screenshots/*.png
