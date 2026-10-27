@@ -8,7 +8,7 @@ The built-in list has **51 places**: sovereign states wholly or partly in geogra
 
 ## Build
 
-Requires JDK 17 and Android SDK platform 35. Run `./gradlew testDebugUnitTest assembleDebug` (replace the NUL markers with backticks). Install `app/build/outputs/apk/debug/app-debug.apk` on Android 7.0 or later. GitHub Actions runs the tests and publishes a debug APK as a workflow artifact on every push.
+Requires JDK 17 and Android SDK platform 35. Run `./gradlew testDebugUnitTest assembleDebug`. Install `app/build/outputs/apk/debug/app-debug.apk` on Android 7.0 or later. GitHub Actions runs the tests and publishes a debug APK as a workflow artifact on every push.
 
 ## Design
 
