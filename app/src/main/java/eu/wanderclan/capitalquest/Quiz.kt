@@ -1,16 +1,22 @@
 package eu.wanderclan.capitalquest
 
 import kotlin.random.Random
+import java.text.Normalizer
+import java.util.Locale
 
 data class Place(val country: String, val capital: String, val countryDe: String = country, val capitalDe: String = capital, val iso: String) {
     val flag: String get() = iso.map { String(Character.toChars(0x1F1E6 + (it - 'A'))) }.joinToString("")
 }
+
+private fun normalized(value: String) = Normalizer.normalize(value.trim(), Normalizer.Form.NFC)
+    .replace(Regex("\\s+"), " ").lowercase(Locale.ROOT)
 
 enum class Direction { MIXED, COUNTRY_TO_CAPITAL, CAPITAL_TO_COUNTRY }
 
 data class Question(val place: Place, val direction: Direction, val options: List<String>, val german: Boolean = false) {
     val answer: String get() = if (direction == Direction.COUNTRY_TO_CAPITAL) { if (german) place.capitalDe else place.capital } else { if (german) place.countryDe else place.country }
     val prompt: String get() = if (direction == Direction.COUNTRY_TO_CAPITAL) { if (german) place.countryDe else place.country } else { if (german) place.capitalDe else place.capital }
+    fun matchesTyped(input: String): Boolean = normalized(input) == normalized(answer)
     val displayPrompt: String get() = if (direction == Direction.COUNTRY_TO_CAPITAL) "${place.flag}  $prompt" else prompt
     fun displayOption(option: String): String = if (direction == Direction.CAPITAL_TO_COUNTRY) {
         val flag = Europe.places.first { (if (german) it.countryDe else it.country) == option }.flag
@@ -69,7 +75,7 @@ object Europe {
         Place("Sweden", "Stockholm", "Schweden", "Stockholm", iso = "SE"),
         Place("Switzerland", "Bern", "Schweiz", "Bern", iso = "CH"),
         Place("Türkiye", "Ankara", "Türkei", "Ankara", iso = "TR"),
-        Place("Ukraine", "Kyiv", "Ukraine", "Kyjiw", iso = "UA"),
+        Place("Ukraine", "Kyiv", "Ukraine", "Kiew", iso = "UA"),
         Place("United Kingdom", "London", "Vereinigtes Königreich", "London", iso = "GB"),
         Place("Vatican City", "Vatican City", "Vatikanstadt", "Vatikanstadt", iso = "VA"),
     )

@@ -41,6 +41,20 @@ class QuizTest {
         assertEquals(reverse.place.countryDe, reverse.answer)
     }
 
+    @Test fun hardAnswersPracticeSpellingInBothLanguages() {
+        val uk = Europe.places.first { it.country == "United Kingdom" }
+        val country = Question(uk, Direction.CAPITAL_TO_COUNTRY, emptyList(), german = true)
+        assertTrue(country.matchesTyped("  vereinigtes   königreich  "))
+        assertTrue(!country.matchesTyped("Vereinigtes Konigreich"))
+        val capital = Question(Europe.places.first { it.country == "Ukraine" }, Direction.COUNTRY_TO_CAPITAL, emptyList(), german = true)
+        assertEquals("Kiew", capital.answer)
+        assertTrue(capital.matchesTyped("kiew"))
+        assertTrue(!capital.matchesTyped("Kyjiw"))
+        val english = Question(uk, Direction.CAPITAL_TO_COUNTRY, emptyList())
+        assertTrue(english.matchesTyped(" united kingdom "))
+        assertTrue(!english.matchesTyped("united kindgom"))
+    }
+
     @Test fun flagsAppearOnlyBesideCountriesInBothLanguages() {
         val microstates = listOf("Andorra", "San Marino", "Liechtenstein")
         assertTrue(Europe.places.map { it.country }.containsAll(microstates))

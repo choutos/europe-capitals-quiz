@@ -24,6 +24,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,10 +35,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,7 +65,10 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun CapitalQuest() {
     val deck = remember { QuizDeck() }
+    val focusManager = LocalFocusManager.current
     var mode by remember { mutableStateOf(Direction.MIXED) }
+    var hard by remember { mutableStateOf(false) }
+    var typedAnswer by remember { mutableStateOf("") }
     var german by remember { mutableStateOf(Locale.getDefault().language == "de") }
     var question by remember { mutableStateOf(deck.next(mode, german)) }
     var selected by remember { mutableStateOf<String?>(null) }
@@ -71,7 +80,16 @@ private fun CapitalQuest() {
         round = 1
         score = 0
         selected = null
+        typedAnswer = ""
         question = deck.next(newMode, german)
+    }
+
+    fun submitTyped() {
+        if (selected == null && typedAnswer.isNotBlank()) {
+            selected = typedAnswer
+            if (question.matchesTyped(typedAnswer)) score++
+            focusManager.clearFocus()
+        }
     }
 
     Column(
@@ -107,6 +125,13 @@ private fun CapitalQuest() {
                     }
                 }
         }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Column {
+                Text(if (german) "Schwierigkeit: Schwer" else "Difficulty: Hard", color = Ink, fontWeight = FontWeight.SemiBold)
+                Text(if (german) "Antwort eintippen" else "Type your answer", color = Teal, fontSize = 12.sp)
+            }
+            Switch(checked = hard, onCheckedChange = { hard = it; restart() })
+        }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text("${if (german) "FRAGE" else "QUESTION"} $round / $ROUND_SIZE", color = Teal, fontWeight = FontWeight.Bold, fontSize = 13.sp)
             Text("$score ${if (german) "richtig" else "correct"}", color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
@@ -129,35 +154,56 @@ private fun CapitalQuest() {
                     color = Color(0xFFE2F4ED), fontSize = 15.sp)
             }
         }
-        Text(if (german) "Wähle eine Antwort" else "Pick one answer", color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
-        question.options.forEachIndexed { index, option ->
-            val revealed = selected != null
-            val right = revealed && option == question.answer
-            val wrong = revealed && option == selected && !right
-            val highlight = when { right -> Mint; wrong -> Color(0xFFFFEAE5); else -> Color.White }
-            val outline = when { right -> Teal; wrong -> Coral; else -> Color(0xFFE3E8E3) }
-            Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(highlight)
-                    .border(1.dp, outline, RoundedCornerShape(18.dp))
-                    .clickable(enabled = !revealed) {
-                        selected = option
-                        if (option == question.answer) score++
-                    }.padding(horizontal = 17.dp, vertical = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Text("${'A' + index}", color = outline, fontWeight = FontWeight.Bold)
-                Text(question.displayOption(option),
-                    color = Ink, fontWeight = FontWeight.Medium, fontSize = 17.sp, modifier = Modifier.weight(1f))
-                if (right || wrong) Text(if (right) "✓" else "×", color = outline, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+        if (hard) {
+            OutlinedTextField(
+                value = typedAnswer,
+                onValueChange = { if (selected == null) typedAnswer = it },
+                label = { Text(if (german) "Deine Antwort" else "Your answer") },
+                singleLine = true,
+                enabled = selected == null,
+                isError = selected != null && !question.matchesTyped(selected!!),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { submitTyped() }),
+                modifier = Modifier.fillMaxWidth()
+            )
+            if (selected == null) {
+                Button(onClick = { submitTyped() }, enabled = typedAnswer.isNotBlank(),
+                    modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Teal)) {
+                    Text(if (german) "Antwort prüfen" else "Check answer")
+                }
+            }
+        } else {
+            Text(if (german) "Wähle eine Antwort" else "Pick one answer", color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+            question.options.forEachIndexed { index, option ->
+                val revealed = selected != null
+                val right = revealed && option == question.answer
+                val wrong = revealed && option == selected && !right
+                val highlight = when { right -> Mint; wrong -> Color(0xFFFFEAE5); else -> Color.White }
+                val outline = when { right -> Teal; wrong -> Coral; else -> Color(0xFFE3E8E3) }
+                Row(
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(highlight)
+                        .border(1.dp, outline, RoundedCornerShape(18.dp))
+                        .clickable(enabled = !revealed) {
+                            selected = option
+                            if (option == question.answer) score++
+                        }.padding(horizontal = 17.dp, vertical = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text("${'A' + index}", color = outline, fontWeight = FontWeight.Bold)
+                    Text(question.displayOption(option),
+                        color = Ink, fontWeight = FontWeight.Medium, fontSize = 17.sp, modifier = Modifier.weight(1f))
+                    if (right || wrong) Text(if (right) "✓" else "×", color = outline, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                }
             }
         }
         if (selected != null) {
-            Text(if (selected == question.answer) if (german) "Sehr gut! ✦" else "Lovely work! ✦" else if (german) "Richtig ist ${question.answer}." else "The answer is ${question.answer}.",
-                color = if (selected == question.answer) Teal else Coral, fontWeight = FontWeight.Bold)
+            val correct = if (hard) question.matchesTyped(selected!!) else selected == question.answer
+            Text(if (correct) if (german) "Sehr gut! ✦" else "Lovely work! ✦" else if (german) "Richtig ist ${question.answer}." else "The answer is ${question.answer}.",
+                color = if (correct) Teal else Coral, fontWeight = FontWeight.Bold)
             Button(onClick = {
                 if (round == ROUND_SIZE) restart()
-                else { round++; selected = null; question = deck.next(mode, german) }
+                else { round++; selected = null; typedAnswer = ""; question = deck.next(mode, german) }
             }, modifier = Modifier.fillMaxWidth().height(54.dp), shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Teal)) {
                 Text(if (round == ROUND_SIZE) if (german) "Noch einmal  ·  $score / $ROUND_SIZE" else "Play again  ·  $score / $ROUND_SIZE" else if (german) "Weiter →" else "Next stop →", fontSize = 16.sp)
