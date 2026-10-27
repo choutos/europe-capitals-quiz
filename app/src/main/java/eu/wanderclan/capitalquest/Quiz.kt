@@ -16,7 +16,13 @@ enum class Direction { MIXED, COUNTRY_TO_CAPITAL, CAPITAL_TO_COUNTRY }
 data class Question(val place: Place, val direction: Direction, val options: List<String>, val german: Boolean = false) {
     val answer: String get() = if (direction == Direction.COUNTRY_TO_CAPITAL) { if (german) place.capitalDe else place.capital } else { if (german) place.countryDe else place.country }
     val prompt: String get() = if (direction == Direction.COUNTRY_TO_CAPITAL) { if (german) place.countryDe else place.country } else { if (german) place.capitalDe else place.capital }
-    fun matchesTyped(input: String): Boolean = normalized(input) == normalized(answer)
+    fun matchesTyped(input: String): Boolean {
+        val value = normalized(input)
+        if (german && direction == Direction.COUNTRY_TO_CAPITAL && place.country == "Ukraine") {
+            return value in setOf("kiew", "kyjiw", "kyiv", "kyïv")
+        }
+        return value == normalized(answer)
+    }
     val displayPrompt: String get() = if (direction == Direction.COUNTRY_TO_CAPITAL) "${place.flag}  $prompt" else prompt
     fun displayOption(option: String): String = if (direction == Direction.CAPITAL_TO_COUNTRY) {
         val flag = Europe.places.first { (if (german) it.countryDe else it.country) == option }.flag
