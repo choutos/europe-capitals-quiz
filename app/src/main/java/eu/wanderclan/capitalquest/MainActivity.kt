@@ -40,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.util.Locale
 
 private val Ink = Color(0xFF172E39)
 private val Teal = Color(0xFF006D68)
@@ -59,7 +60,8 @@ class MainActivity : ComponentActivity() {
 private fun CapitalQuest() {
     val deck = remember { QuizDeck() }
     var mode by remember { mutableStateOf(Direction.MIXED) }
-    var question by remember { mutableStateOf(deck.next(mode)) }
+    var german by remember { mutableStateOf(Locale.getDefault().language == "de") }
+    var question by remember { mutableStateOf(deck.next(mode, german)) }
     var selected by remember { mutableStateOf<String?>(null) }
     var round by remember { mutableIntStateOf(1) }
     var score by remember { mutableIntStateOf(0) }
@@ -69,7 +71,7 @@ private fun CapitalQuest() {
         round = 1
         score = 0
         selected = null
-        question = deck.next(newMode)
+        question = deck.next(newMode, german)
     }
 
     Column(
@@ -83,12 +85,16 @@ private fun CapitalQuest() {
             }
             Column {
                 Text("CAPITAL QUEST", color = Ink, fontWeight = FontWeight.Black, fontSize = 20.sp, letterSpacing = 1.sp)
-                Text("A little journey across Europe", color = Teal, fontSize = 13.sp)
+                Text(if (german) "Eine kleine Reise durch Europa" else "A little journey across Europe", color = Teal, fontSize = 13.sp)
             }
         }
-        Text("Choose your route", color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Text(if (german) "Wähle deinen Weg" else "Choose your route", color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+            Text(if (german) "DE · EN" else "EN · DE", color = Teal, fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable { german = !german; restart() }.padding(8.dp))
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-            listOf(Direction.MIXED to "Mix", Direction.COUNTRY_TO_CAPITAL to "Capitals", Direction.CAPITAL_TO_COUNTRY to "Countries")
+            listOf(Direction.MIXED to if (german) "Mix" else "Mix", Direction.COUNTRY_TO_CAPITAL to if (german) "Hauptstädte" else "Capitals", Direction.CAPITAL_TO_COUNTRY to if (german) "Länder" else "Countries")
                 .forEach { (choice, label) ->
                     val active = mode == choice
                     Box(
@@ -102,8 +108,8 @@ private fun CapitalQuest() {
                 }
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("QUESTION $round / $ROUND_SIZE", color = Teal, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-            Text("$score correct", color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+            Text("${if (german) "FRAGE" else "QUESTION"} $round / $ROUND_SIZE", color = Teal, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+            Text("$score ${if (german) "richtig" else "correct"}", color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             repeat(ROUND_SIZE) { index ->
@@ -113,16 +119,16 @@ private fun CapitalQuest() {
         }
         Surface(shape = RoundedCornerShape(26.dp), color = Ink, shadowElevation = 10.dp, modifier = Modifier.fillMaxWidth()) {
             Column(Modifier.background(Brush.linearGradient(listOf(Ink, Color(0xFF245F60)))).padding(26.dp)) {
-                Text(if (question.direction == Direction.COUNTRY_TO_CAPITAL) "FIND THE CAPITAL" else "FIND THE COUNTRY",
+                Text(if (question.direction == Direction.COUNTRY_TO_CAPITAL) if (german) "FINDE DIE HAUPTSTADT" else "FIND THE CAPITAL" else if (german) "FINDE DAS LAND" else "FIND THE COUNTRY",
                     color = Color(0xFFABD9C9), fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 2.sp)
                 Spacer(Modifier.height(18.dp))
                 Text(question.prompt, color = Color.White, fontSize = 34.sp, lineHeight = 40.sp, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(12.dp))
-                Text(if (question.direction == Direction.COUNTRY_TO_CAPITAL) "Which city is its capital?" else "Which country has this capital?",
+                Text(if (question.direction == Direction.COUNTRY_TO_CAPITAL) if (german) "Welche Stadt ist die Hauptstadt?" else "Which city is its capital?" else if (german) "Zu welchem Land gehört diese Hauptstadt?" else "Which country has this capital?",
                     color = Color(0xFFE2F4ED), fontSize = 15.sp)
             }
         }
-        Text("Pick one answer", color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+        Text(if (german) "Wähle eine Antwort" else "Pick one answer", color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
         question.options.forEachIndexed { index, option ->
             val revealed = selected != null
             val right = revealed && option == question.answer
@@ -145,17 +151,17 @@ private fun CapitalQuest() {
             }
         }
         if (selected != null) {
-            Text(if (selected == question.answer) "Lovely work! ✦" else "The answer is ${question.answer}.",
+            Text(if (selected == question.answer) if (german) "Sehr gut! ✦" else "Lovely work! ✦" else if (german) "Richtig ist ${question.answer}." else "The answer is ${question.answer}.",
                 color = if (selected == question.answer) Teal else Coral, fontWeight = FontWeight.Bold)
             Button(onClick = {
                 if (round == ROUND_SIZE) restart()
-                else { round++; selected = null; question = deck.next(mode) }
+                else { round++; selected = null; question = deck.next(mode, german) }
             }, modifier = Modifier.fillMaxWidth().height(54.dp), shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Teal)) {
-                Text(if (round == ROUND_SIZE) "Play again  ·  $score / $ROUND_SIZE" else "Next stop →", fontSize = 16.sp)
+                Text(if (round == ROUND_SIZE) if (german) "Noch einmal  ·  $score / $ROUND_SIZE" else "Play again  ·  $score / $ROUND_SIZE" else if (german) "Weiter →" else "Next stop →", fontSize = 16.sp)
             }
         }
-        Text("${Europe.places.size} places to explore · No ads · Works offline", color = Color(0xFF667C7C),
+        Text("${Europe.places.size} ${if (german) "Orte entdecken · Keine Werbung · Offline" else "places to explore · No ads · Works offline"}", color = Color(0xFF667C7C),
             fontSize = 12.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
     }
 }

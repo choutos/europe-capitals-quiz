@@ -1,6 +1,6 @@
 # Capital Quest 🧭
 
-A small, offline Android game for learning European countries and capitals. Pick the capital for a country, pick the country for a capital, or play a mixed round. Four choices per question; ten questions per round, with immediate feedback and no repeated place within a deck.
+A small, offline Android game for learning European countries and capitals. Pick the capital for a country, pick the country for a capital, or play a mixed round. Four choices per question; ten questions per round, with immediate feedback and no repeated place within a deck. The interface and quiz answers are available in English and German: the initial language follows the device locale, and the EN/DE control switches languages in-app. Switching languages starts a fresh round.
 
 ## Scope
 
