@@ -41,6 +41,27 @@ class QuizTest {
         assertEquals(reverse.place.countryDe, reverse.answer)
     }
 
+    @Test fun flagsAppearOnlyBesideCountriesInBothLanguages() {
+        val microstates = listOf("Andorra", "San Marino", "Liechtenstein")
+        assertTrue(Europe.places.map { it.country }.containsAll(microstates))
+        assertEquals("🇦🇩", Europe.places.first { it.country == "Andorra" }.flag)
+        assertEquals(Europe.places.size, Europe.places.map { it.iso }.toSet().size)
+        for (german in listOf(false, true)) {
+            val deck = QuizDeck(Random(11))
+            repeat(Europe.places.size) {
+                val question = deck.next(Direction.COUNTRY_TO_CAPITAL, german)
+                assertTrue(question.displayPrompt.startsWith(question.place.flag))
+                question.options.forEach { assertEquals(it, question.displayOption(it)) }
+            }
+            repeat(Europe.places.size) {
+                val question = deck.next(Direction.CAPITAL_TO_COUNTRY, german)
+                assertEquals(question.prompt, question.displayPrompt)
+                question.options.forEach { assertTrue(question.displayOption(it).endsWith("  $it")) }
+                assertTrue(question.displayOption(question.answer).startsWith(question.place.flag))
+            }
+        }
+    }
+
     @Test fun datasetIncludesNonEuAndTranscontinentalStates() {
         val names = Europe.places.map { it.country }
         assertEquals(51, names.size)

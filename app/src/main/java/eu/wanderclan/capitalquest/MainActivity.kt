@@ -122,7 +122,8 @@ private fun CapitalQuest() {
                 Text(if (question.direction == Direction.COUNTRY_TO_CAPITAL) if (german) "FINDE DIE HAUPTSTADT" else "FIND THE CAPITAL" else if (german) "FINDE DAS LAND" else "FIND THE COUNTRY",
                     color = Color(0xFFABD9C9), fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 2.sp)
                 Spacer(Modifier.height(18.dp))
-                Text(question.prompt, color = Color.White, fontSize = 34.sp, lineHeight = 40.sp, fontWeight = FontWeight.Bold)
+                Text(question.displayPrompt,
+                    color = Color.White, fontSize = 34.sp, lineHeight = 40.sp, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(12.dp))
                 Text(if (question.direction == Direction.COUNTRY_TO_CAPITAL) if (german) "Welche Stadt ist die Hauptstadt?" else "Which city is its capital?" else if (german) "Zu welchem Land gehört diese Hauptstadt?" else "Which country has this capital?",
                     color = Color(0xFFE2F4ED), fontSize = 15.sp)
@@ -146,7 +147,8 @@ private fun CapitalQuest() {
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text("${'A' + index}", color = outline, fontWeight = FontWeight.Bold)
-                Text(option, color = Ink, fontWeight = FontWeight.Medium, fontSize = 17.sp, modifier = Modifier.weight(1f))
+                Text(question.displayOption(option),
+                    color = Ink, fontWeight = FontWeight.Medium, fontSize = 17.sp, modifier = Modifier.weight(1f))
                 if (right || wrong) Text(if (right) "✓" else "×", color = outline, fontWeight = FontWeight.Bold, fontSize = 20.sp)
             }
         }
